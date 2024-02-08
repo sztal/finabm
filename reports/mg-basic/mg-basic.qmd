@@ -1,0 +1,103 @@
+---
+title: "Minority Game: replication of the basic results"
+---
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+from finabm import MinorityGame
+```
+
+## Overview
+
+## Replication of the basic results from the MG paper in Physica A
+
+### Fig. 1.
+
+```{python}
+N = 1001
+S = 5
+M = [6, 8, 10]
+T = 1000
+
+fig, axes = plt.subplots(nrows=len(M), figsize=(8, 10))
+
+for ax, m in zip(axes.flat, M):
+    mg = MinorityGame(N, m, S, seed=2**m)
+    mg.run(T)
+    A = (mg.attendance + mg.N) / 2
+    ax.plot(np.arange(1, T+1), A)
+    ax.set_ylim(0, mg.N)
+    ax.set_title(fr"$M = {m}$")
+```
+
+## Replication of the results from the thesis
+
+### Fig. 2.1.
+
+Here we study the relationship between normalized fluctuations
+$$
+\frac{\sigma^2}{N} = \frac{\langle{}A^2\rangle{}}{N}
+$$
+with respect to a controll parameter $\alpha = 2^M/N$.
+
+
+As evident in the figure below, replicated the results reported
+as Fig. 2.1. in the PhD thesis of Damien Challet.
+We see qualitatively identical pattern of decreasing
+normalized fluctuation, which after the minimum for medium values
+of $\alpha$ start to increase (slightly) again and reach normalized
+fluctuations of about $1$, which is a value expected for random
+decisions. Thus, we observe the three different regimes as reported
+in the thesis.
+
+There are, however, some minor numerical differences. In our resuls
+the curves are less bended downwards so the minima are less pronounced
+than in the results reported in the thesis. It is not clear whether
+these stems from some differences in terms of implementation details
+or just from using somewhat different parameters
+(i.e. the thesis does not specify the number of times steps).
+Nonetheless, irrespective of these numerical differences, the qualitative
+results are the same.
+
+```{python}
+#| output: false
+T = 2000 # number of time steps
+R = 2    # number of replications of each parameter combination
+M = 8    # memory size
+S = [2, 3, 4, 5, 6]
+# Values of N producing range of alpha values roughly between
+N = (np.logspace(*np.log10([25, 5120]), 10)/2).astype(int)*2 + 1
+alpha = 2**8/N
+
+A2 = np.empty((len(S), len(alpha), R))
+
+counter = 0
+for i, s in tqdm([*enumerate(S)]):
+    for j, n in [*enumerate(N)]:
+        for k in range(R):
+            counter += 1
+            mg = MinorityGame(n, M, s, seed=counter)
+            mg.run(T)
+            A2[i,j,k] = (mg.attendance**2).mean()
+```
+
+```{python}
+#| label: fig-thesis-2.1
+#| fig-cap: "Normalized fluctuations with respect to α ($M = 8, S = 2, ..., 6$)."
+Sigma = (A2 / N[None, :, None]).mean(axis=-1)
+fig, ax = plt.subplots(figsize=(6, 6))
+
+for s, fluct in zip(S, Sigma):
+    ax.scatter(alpha, fluct, label=rf"$S = {s}$")
+
+ax.set_xscale("log")
+ax.set_yscale("log")
+ax.axhline(1, ls="--", color="gray")
+ax.set_ylim(.1, 100)
+ax.set_xlabel(r"$\alpha$")
+ax.set_ylabel(r"$\sigma^2/N$")
+ax.legend()
+fig.tight_layout()
+```

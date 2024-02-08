@@ -1,0 +1,33 @@
+[build-system]
+requires = [ "setuptools >= 61.0", "wheel" ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finabm"
+requires-python = ">=3.10"
+version = "0.0.1"
+authors = [{name = "Szymon Talaga", email = "stalaga@protonmail.com"}]
+readme = "README.md"
+dependencies = [
+    "numpy>=1.23",
+    "pandas>=1.5",
+    "tqdm>=4.64"
+]
+
+[tool.setuptools.packages.find]
+include = ["finabm"]
+
+[tool.pytest.ini_options]
+minversion = "7.1"
+addopts = [
+    "--verbose",
+    "--tb=no",
+    "--capture=no",
+    "--pdbcls=IPython.terminal.debugger:Pdb",
+]
+testpaths = [
+    "tests"
+]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

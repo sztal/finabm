@@ -1,0 +1,127 @@
+---
+title: "Minority Game: replication of the core results"
+---
+
+## Overview
+
+Here I reproduce core results (i.e. figures) from the Challet's thesis
+and the Physica A paper about Minority Game (MG).
+
+
+```{python}
+# Configuration of the Environment
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+import pickle
+from finabm import MinorityGame  # this is our custom package
+```
+
+### Parameters
+
+Simulation runs are parametrized with the following parameters:
+
+- `N` : number of agents, which should be an odd positive integer.
+        In most cases it will be set to 1001.
+- `M` : agent memory size. Agents make decisions based on the history
+        of `M` last winning sides. It can be a single positive integer
+        (all agents have the same memory size) or a vector of sizes
+        of length `N`.
+- `S` : agent strategy bag size. Each agent uses `S` different strategies.
+        It can be either a single value or a vector of `N` values.
+
+
+## Replication of the results from the thesis
+
+### Fig. 2.1.
+
+Here we study the relationship between normalized fluctuations
+$$
+\frac{\sigma^2}{N} = \frac{\langle{}A^2\rangle{}}{N}
+$$
+with respect to a controll parameter $\alpha = 2^M/N$.
+
+
+As evident in the figure below, replicated the results reported
+as Fig. 2.1. in the PhD thesis of Damien Challet.
+We see qualitatively identical pattern of decreasing
+normalized fluctuation, which after the minimum for medium values
+of $\alpha$ start to increase (slightly) again and reach normalized
+fluctuations of about $1$, which is a value expected for random
+decisions. Thus, we observe the three different regimes as reported
+in the thesis.
+
+There are, however, some minor numerical differences. In our resuls
+the curves are less bended downwards so the minima are less pronounced
+than in the results reported in the thesis. It is not clear whether
+these stems from some differences in terms of implementation details
+or just from using somewhat different parameters
+(i.e. the thesis does not specify the number of times steps).
+Nonetheless, irrespective of these numerical differences, the qualitative
+results are the same.
+
+```{python}
+#| output: false
+with open("fig-21.pkl", "rb") as fh:
+    params, A2 = pickle.load(fh)
+
+N, M, S, R, T = params
+alpha = 2**M/N
+```
+
+```{python}
+#| label: fig-thesis-2.1
+#| fig-cap: "Normalized fluctuations with respect to α ($M = 8, S = 2, ..., 6$)."
+Sigma = (A2 / N[None, :, None]).mean(axis=-1)
+fig, ax = plt.subplots(figsize=(6, 6))
+
+for s, fluct in zip(S, Sigma):
+    ax.scatter(alpha, fluct, label=rf"$S = {s}$")
+
+ax.set_xscale("log")
+ax.set_yscale("log")
+ax.axhline(1, ls="--", color="gray")
+ax.set_ylim(.1, 100)
+ax.set_xlabel(r"$\alpha$")
+ax.set_ylabel(r"$\sigma^2/N$")
+ax.legend()
+fig.tight_layout()
+```
+
+
+### Fig. 2.2. (top)
+
+```{python}
+#| output: false
+with open("fig-22-top.pkl", "rb") as fh:
+    params, A2 = pickle.load(fh)
+
+alpha, M, S, R, T = params
+```
+
+```{python}
+#| label: fig-thesis-2.2-top
+#| fig-cap: "Normalized fluctuations with respect to α ($M = 5, 6, 8, S = 2$), $300 * 2^M$ iterations."
+N = (2**np.array(M)/alpha[:, None] / 2).astype(int) * 2 + 1
+Sigma = A2.mean(axis=-1) / N[:, :, None]
+
+S = S[:1]
+fig, axes = plt.subplots(nrows=len(S), figsize=(6, 6))
+
+# for i, x in enumerate(zip(S, axes.flat)):
+for i, s in enumerate(S):
+    ax = axes
+    for m, fluct in zip(M, Sigma[:, :, i].T):
+        ax.scatter(alpha, fluct, label=rf"$M = {m}$")
+    ax.set_xlim(.1, 10)
+    ax.set_ylim(0, 2)
+    ax.set_xscale("log")
+    ax.axhline(1, ls="--", color="gray")
+    ax.axvline(.3374, ls="--", color="gray")
+    ax.set_xlabel(r"$\alpha$")
+    ax.set_ylabel(r"$\sigma^2/N$")
+    ax.set_title(rf"$S = {s}$")
+    ax.legend()
+    fig.tight_layout()
+```

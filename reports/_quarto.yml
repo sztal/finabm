@@ -1,0 +1,10 @@
+project:
+  title: "Financial ABMs"
+
+number-sections: true
+format:
+  html:
+    code-fold: true
+    embed-resources: true
+  pdf:
+    echo: false
