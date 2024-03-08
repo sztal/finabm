@@ -1,13 +1,15 @@
 """Data for reproducing figure 2.1. from the thesis."""
 # pylint: disable=missing-function-docstring
-import sys
 import pickle
-from pathlib import Path
+import sys
 from argparse import ArgumentParser
 from multiprocessing import cpu_count
+from pathlib import Path
+
 import numpy as np
-from tqdm import tqdm
 from pqdm.processes import pqdm
+from tqdm import tqdm
+
 from finabm import MinorityGame
 
 
@@ -39,7 +41,7 @@ def main():
             results = pqdm(args, compute, n_jobs=cli.jobs, leave=False)
             A2[i, j, :] = results
 
-    with open(here/"fig-21.pkl", "wb") as fh:
+    with Path(here/"fig-21.pkl").open("wb") as fh:
         params = (N, M, S, R, T)
         pickle.dump((params, A2), fh)
 

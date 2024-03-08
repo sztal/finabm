@@ -1,14 +1,15 @@
 """Simulation utilities."""
-from typing import Any, Optional
+from argparse import ArgumentParser, Namespace
+from collections.abc import Iterable, Mapping, Sequence
 from functools import partial
 from itertools import product
-from collections.abc import Mapping, Sequence, Iterable
 from types import SimpleNamespace
-from argparse import ArgumentParser, Namespace
+from typing import Any
+
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from pqdm.processes import pqdm
+from tqdm import tqdm
 
 
 class Simulation:
@@ -127,7 +128,7 @@ class Simulation:
     def compute(
         params: tuple[int, pd.Series],
         *,
-        cli: Optional[Namespace] = None
+        cli: Namespace | None = None
     ) -> Any:
         """Run simulation for a specific configuration of parameters
         including repeating for ``self.cli.R`` times.

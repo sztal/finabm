@@ -1,8 +1,10 @@
 """Base classes for ABMs."""
 # pylint: disable=abstract-method
 from __future__ import annotations
-from typing import Any, Optional
+
 from functools import cached_property
+from typing import Any
+
 import numpy as np
 from tqdm.auto import tqdm
 
@@ -33,8 +35,8 @@ class Game:
     def __init__(
         self,
         *modules,
-        attendance: Optional[np.ndarray[tuple[int], np.integer]] = None,
-        seed: Optional[int] = None,
+        attendance: np.ndarray[tuple[int], np.integer] | None = None,
+        seed: int | None = None,
         init_modules: bool = True
     ) -> None:
         """Initialization method.
@@ -50,7 +52,8 @@ class Game:
         self.rng = np.random.default_rng(seed)
         if attendance is not None \
         and (attendance.ndim != 1 or not np.issubdtype(attendance.dtype, np.integer)):
-            raise ValueError("'attendance' has to be 1-dimensional integer array")
+            errmsg = "'attendance' has to be 1-dimensional integer array"
+            raise ValueError(errmsg)
         self.modules = modules
         self._attendance = None
         self._init_attendance(attendance)
@@ -124,7 +127,7 @@ class Game:
         n: int,
         *,
         progress: bool = False,
-        stop_absorbing: Optional[int] = None,
+        stop_absorbing: int | None = None,
         **kwds: Any
     ) -> None:
         """Run simulation for ``n`` steps.
@@ -157,9 +160,9 @@ class Game:
 
     def _init_attendance(
         self,
-        attendance: Optional[np.ndarray[tuple[int], np.integer]],
+        attendance: np.ndarray[tuple[int], np.integer] | None,
         *,
-        mmax: Optional[int] = None
+        mmax: int | None = None
     ) -> None:
         """Initialize artificial attendance vector."""
         mmax = mmax or self.mmax
@@ -193,12 +196,15 @@ class GameModule:
     ) -> None:
         # pylint: disable=isinstance-second-argument-not-valid-type
         if not np.isscalar(N) or not isinstance(N, int | np.integer) or N < 0:
-            raise ValueError("'N' has to be a positive integer")
+            errmsg = "'N' has to be a positive integer"
+            raise ValueError(errmsg)
         if not np.isscalar(M):
             if M.ndim != 1:
-                raise ValueError("'M' has to be 1-dimensional")
+                errmsg = "'M' has to be 1-dimensional"
+                raise ValueError(errmsg)
             if M.size != N:
-                raise ValueError("'M' size is inconsistent with 'N'")
+                errmsg = "'M' size is inconsistent with 'N'"
+                raise ValueError(errmsg)
         self.N = int(N)
         self.M = M
         self.game = None
@@ -229,7 +235,7 @@ class GameModule:
         """Initialize as game module."""
         self.game = game
 
-    def step(self) -> tuple[int, Any, ...]:
+    def step(self) -> tuple[Any, ...]:
         """Make a step of module simulation."""
         raise NotImplementedError
 
@@ -258,14 +264,15 @@ class FinancialGame(Game):
     def __init__(
         self,
         *modules,
-        liquidity: Optional[float] = None,
+        liquidity: float | None = None,
         initial_price: float = 0,
         **kwds: Any
     ) -> None:
         super().__init__(*modules, **kwds, init_modules=False)
         self.liquidity = float(self.N if liquidity is None else liquidity)
         if not np.isscalar(initial_price):
-            raise ValueError("'initial_price' has to be a scalar value")
+            errmsg = "'initial_price' has to be a scalar value"
+            raise ValueError(errmsg)
         self.initial_price = float(initial_price)
         self._price = None
         self._init_price()
@@ -311,7 +318,7 @@ class FinancialGame(Game):
         self,
         attendance: int | np.ndarray[tuple[int], np.integer],
         *,
-        initial_price: Optional[float] = None
+        initial_price: float | None = None
     ) -> np.ndarray[tuple[float], np.floating]:
         """Get prices from attendance values.
 

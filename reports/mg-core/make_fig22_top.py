@@ -1,11 +1,13 @@
-import sys
 import pickle
-from pathlib import Path
+import sys
 from argparse import ArgumentParser
 from multiprocessing import cpu_count
+from pathlib import Path
+
 import numpy as np
-from tqdm import tqdm
 from pqdm.processes import pqdm
+from tqdm import tqdm
+
 from finabm import MinorityGame
 
 
@@ -39,7 +41,7 @@ def main():
                 A2[i, j, k, :] = results
                 counter += R
 
-    with open(here/"fig-22-top.pkl", "wb") as fh:
+    with Path(here/"fig-22-top.pkl").open("wb") as fh:
         params = (alpha, M, S, R, T)
         pickle.dump((params, A2), fh)
 

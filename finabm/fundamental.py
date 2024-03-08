@@ -1,9 +1,11 @@
 """Fundamental Game (FG) implementation."""
-from typing import Any, Literal
 import warnings
+from typing import Any, Literal
+
 import numpy as np
 from scipy.stats import norm
-from .base import GameModule, FinancialGame
+
+from .base import FinancialGame, GameModule
 
 
 class Fundamental(GameModule):
@@ -40,12 +42,15 @@ class Fundamental(GameModule):
         model: Literal[_models] = _models[0]  # type: ignore
     ) -> None:
         if model not in self._models:
-            raise ValueError(f"'model' has to be one of {self._models}")
+            errmsg = f"'model' has to be one of {self._models}"
+            raise ValueError(errmsg)
         if np.any(W < 2):
-            raise ValueError("'W' must be greater than 1")
+            errmsg = "'W' must be greater than 1"
+            raise ValueError(errmsg)
         super().__init__(N, M=W+1)
         if not np.isscalar(X) and X <= 0:
-            raise ValueError("'X' has to be a positive scalar")
+            errmsg = "'X' has to be a positive scalar"
+            raise ValueError(errmsg)
         self.X = X
         self.P = None
         self._gamma = []
@@ -224,11 +229,9 @@ class FundamentalGame(FinancialGame):
     def __getattr__(self, name: str) -> Any:
         try:
             return getattr(self.fg, name)
-        except AttributeError as e:
-            cn = self.__class__.__name__
-            raise AttributeError(
-                f"'{cn}' has no attribute '{name}'"
-            ) from e
+        except AttributeError as exc:
+            errmsg = f"'{self.__class__.__name__}' has no attribute '{name}'"
+            raise AttributeError(errmsg) from exc
 
     # Properties --------------------------------------------------------------
 
