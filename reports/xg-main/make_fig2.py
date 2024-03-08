@@ -2,16 +2,17 @@
 import gzip
 import pickle
 from pathlib import Path
-import numpy as np
-import pandas as pd
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from tqdm.auto import tqdm
 
 mpl.rcParams["axes.formatter.useoffset"] = False
 
 BLUE  = "#0072FF"
-HERE  = Path(".").absolute()
+HERE  = Path().absolute()
 FIGS  = HERE/"figs"
 DIR   = HERE/"data"
 PATHS = {
@@ -23,9 +24,9 @@ if not FIGS.exists():
 
 # %%
 DATA = []
-for name, path in tqdm(PATHS.items()):
+for _, path in tqdm(PATHS.items()):
     with gzip.open(path, "rb") as fh:
-        CLI, df = pickle.load(fh)
+        CLI, df = pickle.load(fh)  # noqa
     df["N"] = CLI.N
     df["M"] = CLI.M
     df["S"] = CLI.S
@@ -59,14 +60,14 @@ X   = qdf.index.get_level_values("X").unique()
 # Plotting
 fig, axes = plt.subplots(nrows=X.size, ncols=Rho.size, figsize=(22, 18))
 
-for x, axrow in zip(X, axes):
-    for rho, ax in zip(Rho, axrow):
+for x, axrow in zip(X, axes, strict=False):
+    for rho, ax in zip(Rho, axrow, strict=False):
         df = qdf[Qvs].loc[rho, x]
         qv = df.columns
         t = df.index.get_level_values("t")
         P = np.exp(df.to_numpy().T)
 
-        for q, p in zip(qv, P):
+        for q, p in zip(qv, P, strict=False):
             ls = "-" if q == .5 else ":"
             ax.plot(t, p, label=q, color="gray", ls=ls, lw=5)
 

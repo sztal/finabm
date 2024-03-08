@@ -2,9 +2,10 @@
 import gzip
 import pickle
 from pathlib import Path
-import numpy as np
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 
 mpl.rcParams["axes.formatter.useoffset"] = False
 
@@ -17,7 +18,7 @@ if not FIGS.exists():
 
 
 with gzip.open(FILE, "rb") as fh:
-    cli, df = pickle.load(fh)
+    cli, df = pickle.load(fh)  # noqa
 df["N"] = cli.N
 df["M"] = cli.M
 df["S"] = cli.S
@@ -39,7 +40,7 @@ y1  = P.max()*1.01
 div, mod = divmod(len(P), 2)
 fig, axes = plt.subplots(nrows=div+mod, ncols=div, figsize=(20, 10))
 
-for ax, x, rho, p in zip(axes.flat, X, Rho, P):
+for ax, x, rho, p in zip(axes.flat, X, Rho, P, strict=False):
     t = T[idx]
     for pt in p[10:20, idx]:
         ax.plot(t, pt, color="black", alpha=.7)

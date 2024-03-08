@@ -1,8 +1,11 @@
 """Minority Game (MG) implementation."""
 from __future__ import annotations
-from typing import Any, Optional
+
 from functools import cached_property
+from typing import Any
+
 import numpy as np
+
 from .base import Game, GameModule
 
 
@@ -47,12 +50,15 @@ class Minority(GameModule):
         """
         super().__init__(N, M)
         if N % 2 == 0:
-            raise ValueError("'N' has to be odd")
+            errmsg = "'N' has to be odd"
+            raise ValueError(errmsg)
         if not np.isscalar(S):
             if S.ndim != 1:
-                raise ValueError("'S' has to be 1-dimensional")
+                errmsg = "'S' has to be 1-dimensional"
+                raise ValueError(errmsg)
             if S.size != N:
-                raise ValueError("'S' size is inconsistent with 'n'")
+                errmsg = "'S' size is inconsistent with 'n'"
+                raise ValueError(errmsg)
         self.S = S
         self.V = None
         self.P = None
@@ -72,10 +78,7 @@ class Minority(GameModule):
     def Ms(self) -> np.ndarray[tuple[int], np.integer]:
         """Memory vector for agent strategies."""
         if np.isscalar(self.M):
-            if np.isscalar(self.S):
-                S = self.S*self.N
-            else:
-                S = self.S.sum()
+            S = self.S*self.N if np.isscalar(self.S) else self.S.sum()
             out = np.repeat(self.M, S)
         else:
             out = np.repeat(self.M, self.S)
@@ -105,10 +108,7 @@ class Minority(GameModule):
         """Vector of shifts for traversing over blocks of strategy
         array corresponding to strategies of different agents.
         """
-        if np.isscalar(self.S):
-            S = np.full(self.N, self.S)
-        else:
-            S = self.S
+        S = np.full(self.N, self.S) if np.isscalar(self.S) else self.S
         shift = np.roll(S, shift=1)
         shift[0] = 0
         return shift.cumsum().astype(np.uint32)
@@ -198,7 +198,7 @@ class Minority(GameModule):
 
     def _get_strategies(
         self,
-        idx: Optional[np.ndarray[tuple[int], np.integer]] = None
+        idx: np.ndarray[tuple[int], np.integer] | None = None
     ) -> np.ndarray[tuple[int, int], np.integer]:
         """Get strategies array.
 
@@ -209,13 +209,13 @@ class Minority(GameModule):
             The best performing stragies are selected if ``None``.
         """
         if idx is None:
-            mask = self.V == self.V.max(axis=1)[:, None]
+            mask = self.V.max(axis=1)[:, None] == self.V
             if isinstance(mask, np.ma.MaskedArray):
                 mask = mask.data
             mask = mask.cumsum(axis=1)
             B = mask / mask[:, -1, None]
             X = self.game.rng.random(self.N)
-            idx = np.argmax(B > X[:, None], axis=1)
+            idx = np.argmax(X[:, None] < B, axis=1)
         return idx
 
     def _get_payoffs(
@@ -236,19 +236,20 @@ class Minority(GameModule):
 
     def _init_P(self) -> None:
         """Initialize strategy array ``P``."""
+        # ruff: noqa: E741
         nS = self.sidx.size
         X = self.game.rng.integers(0, 2, (nS, 2**self.mmax), dtype=np.int8)
         X = 2*X-1
         I = np.arange(X.size, dtype=np.uint32).reshape(nS, -1)
         I -= I[:, None, 0]
-        mask = I >= 2**self.Ms[:, None]
+        mask = 2**self.Ms[:, None] <= I
         self.P = np.ma.array(X, mask=mask)
 
     def _init_V(self) -> np.ndarray[tuple[int, int], np.bool_]:
         """Initialize array of virtual strategy scores."""
         M = np.arange(self.N*self.smax).reshape(self.N, -1)
         M -= M[:, None, 0]
-        M = M >= (self.S if np.isscalar(self.S) else self.S[:, None])
+        M = (self.S if np.isscalar(self.S) else self.S[:, None]) <= M
         V = np.zeros_like(M, dtype=int)
         if not np.isscalar(self.S):
             V = np.ma.array(V, mask=M)
@@ -291,11 +292,9 @@ class MinorityGame(Game):
     def __getattr__(self, name: str) -> Any:
         try:
             return getattr(self.mg, name)
-        except AttributeError as e:
-            cn = self.__class__.__name__
-            raise AttributeError(
-                f"'{cn}' has no attribute '{name}'"
-            ) from e
+        except AttributeError as exc:
+            errmsg = f"'{self.__class__.__name__}' has no attribute '{name}'"
+            raise AttributeError(errmsg) from exc
 
     # Properties --------------------------------------------------------------
 

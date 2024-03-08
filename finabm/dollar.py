@@ -1,6 +1,8 @@
 """Dollar Game (DG) implementation."""
 from typing import Any
+
 import numpy as np
+
 from .base import FinancialGame
 from .minority import Minority
 
@@ -145,11 +147,9 @@ class DollarGame(FinancialGame):
     def __getattr__(self, name: str) -> Any:
         try:
             return getattr(self.dg, name)
-        except AttributeError as e:
-            cn = self.__class__.__name__
-            raise AttributeError(
-                f"'{cn}' has no attribute '{name}'"
-            ) from e
+        except AttributeError as exc:
+            errmsg = f"'{self.__class__.__name__}' has no attribute '{name}'"
+            raise AttributeError(errmsg) from exc
 
     # Properties --------------------------------------------------------------
 
