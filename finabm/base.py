@@ -286,12 +286,12 @@ class FinancialGame(Game):
     # Properties --------------------------------------------------------------
 
     @property
-    def price(self) -> np.ndarray[tuple[float]]:
+    def price(self) -> np.ndarray[tuple[int], np.floating]:
         """1D price array without the arbitrary starting values."""
         return self._price[self._init_history_size:]
 
     @property
-    def relative_price(self) -> np.ndarray[tuple[float]]:
+    def relative_price(self) -> np.ndarray[tuple[int], np.floating]:
         """1D array of log-relative prices."""
         return self.attendance / self.liquidity
 

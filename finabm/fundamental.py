@@ -27,9 +27,12 @@ class Fundamental(GameModule):
     """
     # pylint: disable=too-many-instance-attributes
     _models = (
-        "fixed-raw", "fixed",
-        "raw", "log",
-        "recent-relative", "relative",
+        "fixed-raw",
+        "fixed",
+        "raw",
+        "log",
+        "recent-relative",
+        "relative",
     )
 
     def __init__(
@@ -126,8 +129,8 @@ class Fundamental(GameModule):
             if self.model == "fixed-raw":
                 p0 = np.exp(self.game.initial_price)
                 price = np.exp(price)
-                # return (price - p0) / (p0*self.X)
                 return (price - p0) / (self.X)
+
         diff = price - self.P.mean(axis=1)
         denom = self.P.std(axis=1, ddof=1)*self.X
         gamma = np.full(diff.shape, np.inf)
