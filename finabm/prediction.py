@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 
 from .base import FinancialGame
+from .dollar import Dollar
 from .fundamental import Fundamental
 
 
@@ -48,6 +49,34 @@ class Expert(Fundamental):
         gamma = (prob - self.fundamental_prob) / self.X
         return gamma
 
+
+class Influencer(Dollar):
+    r"""Influencer aka technical trader with non-zero manipulation bias probability.
+
+    Attributes
+    ----------
+    beta
+        Manipulation/bias probability.
+        Agent decisions are fixed to ``-1`` with probability :math:`\beta`.
+    """
+    def __init__(
+        self,
+        *args: Any,
+        beta: float = 0.0,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.beta = beta
+
+    def _step(self) -> tuple[
+        np.ndarray[tuple[int], np.integer],
+        np.ndarray[tuple[int], np.integer],
+        np.ndarray[tuple[int], np.integer]
+    ]:
+        attendance, agent_decisions, strategy_decisions = super()._step()
+        mask = np.random.random(agent_decisions.size) <= self.beta  # noqa
+        agent_decisions[mask] = -1
+        return attendance, agent_decisions, strategy_decisions
 
 class PredictionGame(FinancialGame):
     """Prediction game class."""
