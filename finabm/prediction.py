@@ -18,14 +18,14 @@ class Expert(Fundamental):
     N
         Number of agents.
     W
-        Length of price history considered by traders.
+        Length of prediction history considered by agents.
     M
         Total memory length, which should be equal to ``W+1``.
     X
         Constant factor for inverse proportional rescaling
-        of price fluctuations.
+        of predited probability fluctuations.
     P
-        2D array with price histories seen by different traders.
+        2D array with price histories seen by different agents.
     fundamental_prob
         Fundamental probability belief of experts.
     """
@@ -45,7 +45,11 @@ class Expert(Fundamental):
         r""":math:`\gamma(t)` factor."""
         i = self.game._init_history_size+self.game.n_step-1
         price = self.game._price[i]
-        prob  = price / (price + 1)
+        if price > 0:
+            prob = 1 / (1 + np.exp(-price))
+        else:
+            price = np.exp(price)
+            prob = price / (1 + price)
         gamma = (prob - self.fundamental_prob) / self.X
         return gamma
 
@@ -84,8 +88,12 @@ class PredictionGame(FinancialGame):
     @property
     def _probability(self) -> np.ndarray[tuple[float]]:
         """Prediction market probability with the arbitrary starting values."""
-        eP = np.exp(self._price)
-        return eP / (1 + eP)
+        P = self._price.copy()
+        mask = P > 0
+        P[mask] = 1 / (1 + np.exp(-P[mask]))
+        eP = np.exp(P[~mask])
+        P[~mask] = eP / (1 + eP)
+        return P
 
     @property
     def probability(self) -> np.ndarray[tuple[float]]:
