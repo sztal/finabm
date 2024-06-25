@@ -12,7 +12,7 @@ from tqdm.auto import tqdm
 mpl.rcParams["axes.formatter.useoffset"] = False
 
 BLUE  = "#0072FF"
-HERE  = Path().absolute()
+HERE  = Path(__file__).parent
 FIGS  = HERE/"figs"
 DIR   = HERE/"data"
 PATHS = {
@@ -75,9 +75,10 @@ for beta in Beta:
                 ax.plot(t, p, label=q, color="gray", ls=ls, lw=5)
 
                 if rho > .5:
+                    Pf = 1
                     delta = x*np.sqrt(-np.log(2-1/rho))
-                    ax.axhline(min(1, 1 + delta), ls="--", color=RED, lw=3)
-                    ax.axhline(max(0, 1 - delta), ls="--", color=RED, lw=3)
+                    ax.axhline(min(1, Pf + delta), ls="--", color=RED, lw=3)
+                    ax.axhline(max(0, Pf - delta), ls="--", color=RED, lw=3)
 
             ax.set_title(
                 rf"$\rho \approx {rho:.2f}, X = {x:.2f}, \beta = {beta:.2f}$",

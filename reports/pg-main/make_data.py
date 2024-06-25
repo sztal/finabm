@@ -27,7 +27,7 @@ class PGSimulation(Simulation):
         if (Nd := cli.N - cli.E) > 0:
             modules.append(Influencer(Nd, cli.M, cli.S, beta=beta))
         if cli.E > 0:
-            modules.append(Expert(cli.E, cli.M, X, fundamental_prob=1))
+            modules.append(Expert(cli.E, cli.M, X, fundamental_prob=.99))
         pg = PredictionGame(
             *modules,
             seed=idx,

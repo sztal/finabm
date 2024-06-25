@@ -11,7 +11,7 @@ mpl.rcParams["axes.formatter.useoffset"] = False
 
 HERE = Path(__file__).parent.absolute()
 DATA = HERE/"data"
-FILE = DATA/"data-N1001-E450-M10-S5-L500-T10000-R100.pkl.gz"
+FILE = DATA/"data-N1001-E450-M10-S5-L500-T10000-R1000.pkl.gz"
 FIGS  = HERE/"figs"
 if not FIGS.exists():
     FIGS.mkdir()
@@ -53,6 +53,7 @@ for beta in Beta:
         ax.set_title(rf"$X = {x}, \beta = {beta:.2f}$", fontsize=20)
         ax.axhline(Pf, ls="-", color=RED, lw=3)
         ax.tick_params(axis="both", which="major", labelsize=16)
+        ax.set_ylim(0, 1)
         if rho > .5:
             delta = x*np.sqrt(-np.log(2-1/rho))
             ax.axhline(min(1, Pf + delta), ls="--", color=RED, lw=3)
